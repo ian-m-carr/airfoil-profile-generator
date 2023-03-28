@@ -7,7 +7,7 @@ The plugin is based on work by David Lednicer, and is derived from my Python por
 
 This port covers 4 and 5 digit NACA profiles with a 2 digit modification code (other profiles are not ported)
 
-the five digit profiles are decently described here: http://airfoiltools.com/airfoil/naca5digit but the tools there do not cover modifications
+the four and five digit profiles are well described here: http://airfoiltools.com/ but the tools there do not support modifications specifications.
 
 The basic version includes code to cover the modified profile case. A modification consists of 2 additional controlling parameters usually specified by appending a hyphen and the digits to a 5 digit specification eg: 23018-53. The first digit controls the leading edge radius, 6 indicates the same radius as the basic 5 digit NACA profile 0 is a sharp (no radius) leading edge and numbers higher than 6 indicate more leading edge rounding. The second digit indicates the distance from the leading edge toward the trailing edge in 1/10ths of the chord length (unit in this case) of the maximum thickness of the profile. So a second digit of 3 indicates the maximum thickness occurs 0.3 * chord length back from the leading edge, and 5 would place it half way back. 0.3 is the default for a 5 digit profile. So to generate a basic, no modification profile equivalent use a modification specification of -63.
 
