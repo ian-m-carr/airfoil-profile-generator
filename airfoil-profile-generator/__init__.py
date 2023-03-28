@@ -13,7 +13,7 @@ import bpy
 import bmesh
 from bpy_extras import object_utils
 from bpy.props import FloatProperty, IntProperty, EnumProperty
-from . import naca_5_mod
+from . import naca_mod
 
 
 def add_box(width, height, depth):
