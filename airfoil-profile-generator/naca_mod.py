@@ -1,7 +1,7 @@
 import math
 
 
-class NACA5Modified:
+class NACAModified:
     NP = 0
 
     XCC = []
@@ -87,8 +87,8 @@ class NACA5Modified:
                 self.YC[I] = MC / math.pow(1 - PC, 2) * (1 - 2 * PC + 2 * PC * self.XCC[I] - math.pow(self.XCC[I], 2))
                 self.DYC[I] = 2 * MC / math.pow(1 - PC, 2) * (PC - self.XCC[I])
             else:
-                self.YC[I] = MC / PC ^ 2 * (2 * PC * self.XCC[I] - math.pow(self.XCC[I], 2))
-                self.DYC[I] = 2 * MC / PC ^ 2 * (PC - self.XCC[I])
+                self.YC[I] = MC / math.pow(PC, 2) * (2 * PC * self.XCC[I] - math.pow(self.XCC[I], 2))
+                self.DYC[I] = 2 * MC / math.pow(PC, 2) * (PC - self.XCC[I])
 
         if LED > 0 and LEDD > 0:
             for I in range(self.NP):
@@ -192,11 +192,10 @@ class NACA5Modified:
 
         # designation
         DESIG = LL * 10000 + PP * 1000 + QQ * 100 + TOC
-        self.DESIG_str = str(DESIG)
 
         # modification designation
         SESIG = IP * 10 + TT
-        self.DESIG_str = "{:05d}".format(self.DESIG_str) + "-" + "{:02d}".format(SESIG)
+        self.DESIG_str = "{:05d}".format(DESIG) + "-" + "{:02d}".format(SESIG)
 
         # now derive the surfaces
         for I in range(self.NP):
