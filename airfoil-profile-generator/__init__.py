@@ -48,10 +48,115 @@ def add_box(width, height, depth):
 
     return verts, faces
 
+class AddNACA4Modified(bpy.types.Operator, object_utils.AddObjectHelper):
+    """Add a NACA 4 digit (modified) parameterized airfoil mesh"""
+    bl_idname = "mesh.airfoil_add_naca_4"
+    bl_label = "NACA 4 digit (modified) airfoil mesh"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    num_points: IntProperty(
+        name="Points per surface",
+        description="Number of points to generate per surface",
+        min=2, max=1000,
+        default=40
+    )
+    point_spacing: EnumProperty(
+        name="Point distribution algorithm",
+        description="How to distribute the generated points",
+        items=(
+            ("1", "Equal spacing", "", 1),
+            ("2", "Half Cosine With Smaller Increments Near Leading edge", "", 2),
+            ("3", "Half Cosine With Smaller Increments Near 1", "", 3),
+            ("4", "Full Cosine", "", 4)
+        ),
+        default=4
+    )
+    chord_length: FloatProperty(
+        name="Chord length",
+        description="The length of the airfoil chord to generate (meters)",
+        min=0.0, max=10,
+        default=1.0,
+    )
+    max_camber: IntProperty(
+        name="NACA4 Digit 1",
+        description="Digit 1, the maximum camber % * 100 (2 = 0.02 = 2%)",
+        min=0, max=9,
+        default=0
+    )
+    max_camber_pos: IntProperty(
+        name="NACA4 Digit 2",
+        description="Digit 2, The position of maximum camber divided by .05 (3 == 0.15 or 15% of chord)",
+        min=0, max=20,
+        default=3
+    )
+    max_thickness_pct: IntProperty(
+        name="NACA4 Digits 3/4",
+        description="Digits 3/4, the maximum thickness in percent of chord",
+        min=0, max=100,
+        default=12
+    )
+    lead_edge_radius: IntProperty(
+        name="NACA4 mod Digit 1",
+        description="Modifier Digit 1, leading edge radius [6:default, 0:sharp, >6:larger radius]",
+        min=0, max=10,
+        default=6
+    )
+    max_thickness_pos: IntProperty(
+        name="NACA5 mod Digit 2",
+        description="Modifier Digit 1, position in 1/10 of chord of maximum thickness (from leading edge) default 30%",
+        min=0, max=10,
+        default=3
+    )
+    lead_edge_droop: FloatProperty(
+        name="Leading Edge droop",
+        description="Leading edge droop max",
+        min=0.0, max=1.0,
+        default=0.0,
+    )
+    lead_edge_droop_pos: FloatProperty(
+        name="Leading Edge droop 0 distance",
+        description="Position in 1/10 of chord where leading edge droop becomes 0 (from leading edge)",
+        min=0.0, max=1.0,
+        default=0.0,
+    )
+
+    def execute(self, context):
+        # create the airfoil generator
+        af = naca_mod.NACAModified(self.num_points)
+
+        # and set it's spacing
+        af.set_coord_spacing(int(self.point_spacing))
+
+        # calculate the profile
+        af.naca_four_modified(self.max_camber_pos, self.max_camber_pos,
+                              self.max_thickness_pct, self.lead_edge_radius, self.max_thickness_pos,
+                              self.lead_edge_droop, self.lead_edge_droop_pos)
+
+        verts_loc, edges = af.get_profile_verts_and_edges(self.chord_length)
+
+        mesh = bpy.data.meshes.new("Airfoil")
+
+        bm = bmesh.new()
+
+        for v_co in verts_loc:
+            bm.verts.new(v_co)
+
+        bm.verts.ensure_lookup_table()
+
+        for edge in edges:
+            bm.edges.new((bm.verts[edge[0]], bm.verts[edge[1]]))
+
+        bm.to_mesh(mesh)
+        mesh.update()
+
+        # add the mesh as an object into the scene with this utility module
+        object_utils.object_data_add(context, mesh, operator=self)
+
+        return {'FINISHED'}
 
 class AddNACA5Modified(bpy.types.Operator, object_utils.AddObjectHelper):
     """Add a NACA 5 digit (modified) parameterized airfoil mesh"""
-    bl_idname = "mesh.airfoil_add"
+    bl_idname = "mesh.airfoil_add_naca_5"
     bl_label = "NACA 5 digit (modified) airfoil mesh"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -81,7 +186,7 @@ class AddNACA5Modified(bpy.types.Operator, object_utils.AddObjectHelper):
     lift_coefficient: IntProperty(
         name="NACA5 Digit 1",
         description="Digit 1, Design lift coefficient * 20/3 (2 == 0.3 Cl)",
-        min=0, max=20,
+        min=1, max=20,
         default=2
     )
     max_camber_pos: IntProperty(
@@ -132,7 +237,7 @@ class AddNACA5Modified(bpy.types.Operator, object_utils.AddObjectHelper):
 
     def execute(self, context):
         # create the airfoil generator
-        af = naca_5_mod.NACA5Modified(self.num_points)
+        af = naca_mod.NACAModified(self.num_points)
 
         # and set it's spacing
         af.set_coord_spacing(int(self.point_spacing))
@@ -167,15 +272,18 @@ class AddNACA5Modified(bpy.types.Operator, object_utils.AddObjectHelper):
 
 def menu_func(self, context):
     self.layout.operator(AddNACA5Modified.bl_idname, icon='MESH_CUBE')
+    self.layout.operator(AddNACA4Modified.bl_idname, icon='MESH_CUBE')
 
 
 def register():
     bpy.utils.register_class(AddNACA5Modified)
+    bpy.utils.register_class(AddNACA4Modified)
     bpy.types.VIEW3D_MT_mesh_add.append(menu_func)  # Adds the new operator to an existing menu.
 
 
 def unregister():
     bpy.utils.unregister_class(AddNACA5Modified)
+    bpy.utils.unregister_class(AddNACA4Modified)
     bpy.types.VIEW3D_MT_mesh_add.remove(menu_func)
 
 
