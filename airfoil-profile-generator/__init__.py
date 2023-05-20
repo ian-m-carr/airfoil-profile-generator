@@ -128,7 +128,7 @@ class AddNACA4Modified(bpy.types.Operator, object_utils.AddObjectHelper):
         af.set_coord_spacing(int(self.point_spacing))
 
         # calculate the profile
-        af.naca_four_modified(self.max_camber_pos, self.max_camber_pos,
+        af.naca_four_modified(self.max_camber, self.max_camber_pos,
                               self.max_thickness_pct, self.lead_edge_radius, self.max_thickness_pos,
                               self.lead_edge_droop, self.lead_edge_droop_pos)
 
